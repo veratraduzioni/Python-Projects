@@ -1,0 +1,211 @@
+-- TABLE CREATION AND IMPORTING THE DATASET
+
+CREATE TABLE if not exists receiving_country(
+  id_receive INT NOT NULL AUTO_INCREMENT,
+  cname_receive varchar(40),
+  ccodealp_receive varchar(3),
+  ccode_receive int not null,
+  ccodeCOW_receive int not null,
+  region_receive int not null,
+  GME_receive int not null,
+  FFP_receive int not null,
+  primary key (id_receive)
+);
+
+
+CREATE TABLE if not exists sending_country(
+  id_send INT NOT NULL AUTO_INCREMENT,
+  ccode_send int not null,
+  ccodealp_send varchar(3),
+  cname_send varchar(40),
+  ccodeCOW_send int not null,
+  region_send int not null,
+  GME_send int not null,
+  v2lgfemleg_send decimal(10,2),
+  FFP_send int not null,
+  primary key (id_send)
+);
+
+
+
+CREATE TABLE if not exists diplomats(
+  id_diplomats int not null auto_increment,
+  year_mission year,
+  ccode_send int not null,
+  ccode_receive int not null,
+  title int not null,
+  gender int not null,
+  main_posting int not null,
+  primary key (id_diplomats)
+);
+
+
+
+/* LOAD DATA INFILE 'C:\\GenDip_Dataset.csv'
+INTO TABLE receiving_country
+FIELDS TERMINATED BY ','
+OPTIONALLY ENCLOSED BY '"'
+IGNORE 1 LINES
+(@dummy1, @dummy2, @dummy3, @dummy4, @col1, @col2, @col3, @col4, @col5, @col6, @col7)
+SET cname_receive = @col1, ccodealp_receive = @col2, ccode_receive = @col3,
+ccodeCOW_receive = @col4, region_receive = @col5, GME_receive = @col6, FFP_receive = @col7; */
+
+/* LOAD DATA INFILE 'C:\\GenDip_Dataset.csv'
+INTO TABLE sending_country
+FIELDS TERMINATED BY ','
+OPTIONALLY ENCLOSED BY '"'
+IGNORE 1 LINES
+(@dummy1, @dummy2, @dummy3, @dummy4, @dummy5, @dummy6, @dummy7, @dummy8, @dummy9, @dummy10, @dummy11,
+ @col1, @col2, @col3, @col4, @col5, @col6, @col7, @col8)
+SET cname_send = @col1, ccodealp_send = @col2, ccode_send = @col3,
+ccodeCOW_send = @col4, region_send = @col5, GME_send = @col6, v2lgfemleg_send = REPLACE(@col7, ',', '.'), FFP_send = @col8; */
+
+LOAD DATA INFILE 'C:\\GenDip_Dataset.csv'
+INTO TABLE diplomats
+FIELDS TERMINATED BY ','
+OPTIONALLY ENCLOSED BY '"'
+IGNORE 1 LINES
+(@col1, @col2, @col3, @col4, @dummy1, @dummy2, @col5, @dummy3, @dummy4, @dummy5, @dummy6, @dummy7, @dummy8, @col6)
+SET year_mission = @col1, main_posting = @col2, title = @col3,
+gender = @col4, ccode_receive = @col5, ccode_send = @col6;
+
+-- How many women have been sent on a mission in the first and last year of the dataset.
+
+/*
+I find the first and last year.
+
+SELECT
+MIN(year_mission) AS FirstYear_Dataset,
+MAX(year_mission) AS LastYearDataSet
+FROM diplomats; 
+
+And I use them to count the number of women.*/
+
+/* SELECT COUNT(gender) AS TotalWomen
+FROM diplomats
+WHERE gender = 1 AND year_mission = 2021; */
+
+
+/* SELECT COUNT(gender) AS TotalWomen
+FROM diplomats
+WHERE gender = 1 AND year_mission = 1968; */
+
+-- I find the number of diplomats during those years to create a bar chart for the comparison.
+
+SELECT COUNT(DISTINCT id_diplomats)
+FROM diplomats
+WHERE year_mission = 2021;
+
+SELECT COUNT(DISTINCT id_diplomats)
+FROM diplomats
+WHERE year_mission = 1968;
+
+-- What is the country that during the years sent the highest number of women.
+
+SELECT sending_country.cname_send, COUNT(DISTINCT id_diplomats) AS TotalWomen
+FROM diplomats
+INNER JOIN sending_country ON diplomats.ccode_send = sending_country.ccode_send
+WHERE gender = 1
+GROUP BY sending_country.cname_send
+ORDER BY TotalWomen DESC
+LIMIT 1;
+
+-- How many men and women have been sent from the countries which declared to have a feminist foreign policy. 
+
+/* SELECT COUNT(DISTINCT id_diplomats) AS TotalMen
+FROM diplomats
+INNER JOIN sending_country ON diplomats.ccode_send = sending_country.ccode_send
+WHERE gender = 0 AND FFP_send = 1; */
+
+SELECT COUNT(DISTINCT id_diplomats) AS TotalWomen
+FROM diplomats
+INNER JOIN sending_country ON diplomats.ccode_send = sending_country.ccode_send
+WHERE gender = 1 AND FFP_send = 1;
+
+-- How many men and women have been sent from America and Europe from 2000 to 2021.
+
+/* SELECT COUNT(DISTINCT id_diplomats) AS TotalWomen
+FROM diplomats
+INNER JOIN sending_country ON diplomats.ccode_send = sending_country.ccode_send
+WHERE gender = 1 AND region_send IN (2,3,7)
+AND year_mission BETWEEN 2000 AND 2021; */
+
+SELECT COUNT(DISTINCT id_diplomats) AS TotalMen
+FROM diplomats
+INNER JOIN sending_country ON diplomats.ccode_send = sending_country.ccode_send
+WHERE gender = 0 AND region_send IN (2,3,7)
+AND year_mission BETWEEN 2000 AND 2021;
+
+-- How many men and women have been sent from Asia from 2000 to 2021.
+
+/* SELECT COUNT(DISTINCT id_diplomats) AS TotalWomen
+FROM diplomats
+INNER JOIN sending_country ON diplomats.ccode_send = sending_country.ccode_send
+WHERE gender = 1 AND region_send = 1
+AND year_mission BETWEEN 2000 AND 2021; */
+
+SELECT COUNT(DISTINCT id_diplomats) AS TotalMen
+FROM diplomats
+INNER JOIN sending_country ON diplomats.ccode_send = sending_country.ccode_send
+WHERE gender = 0 AND region_send = 1
+AND year_mission BETWEEN 2000 AND 2021;
+
+-- How many men and women have been sent from GME countries from 2000 to 2021.
+
+/* SELECT COUNT(DISTINCT id_diplomats) AS TotalWomen
+FROM diplomats
+INNER JOIN sending_country ON diplomats.ccode_send = sending_country.ccode_send
+WHERE gender = 1 AND GME_send = 1
+AND year_mission BETWEEN 2000 AND 2021; */
+
+SELECT COUNT(DISTINCT id_diplomats) AS TotalMen
+FROM diplomats
+INNER JOIN sending_country ON diplomats.ccode_send = sending_country.ccode_send
+WHERE gender = 0 AND GME_send = 1
+AND year_mission BETWEEN 2000 AND 2021;
+
+-- How many women have been received in Italy throughout the whole dataset timeframe.
+
+SELECT COUNT(DISTINCT id_diplomats) AS TotalWomen
+FROM diplomats
+INNER JOIN receiving_country ON diplomats.ccode_receive = receiving_country.ccode_receive
+WHERE gender = 1 AND ccodealp_receive = 'ITA';
+
+-- How many men and women have been sent from GME countries with a title of 3 or 98 have been received in Italy in 2021.
+
+/* SELECT COUNT(DISTINCT id_diplomats) AS TotalWomen
+FROM diplomats
+INNER JOIN receiving_country ON diplomats.ccode_receive = receiving_country.ccode_receive
+INNER JOIN sending_country ON diplomats.ccode_send = sending_country.ccode_send
+WHERE
+  gender = 1 AND
+  ccodealp_receive = 'ITA' AND
+  GME_send = 1  AND
+  title IN (3,98) AND
+  year_mission = 2021; */
+
+SELECT COUNT(DISTINCT id_diplomats) AS TotalMen
+FROM diplomats
+INNER JOIN receiving_country ON diplomats.ccode_receive = receiving_country.ccode_receive
+INNER JOIN sending_country ON diplomats.ccode_send = sending_country.ccode_send
+WHERE
+  gender = 0 AND
+  ccodealp_receive = 'ITA' AND
+  GME_send = 1  AND
+  title IN (3,98) AND
+  year_mission = 2021;
+
+-- What is the GME country that sent the highest number of women with the title of ambassador in Italy.
+
+SELECT sending_country.cname_send, COUNT(DISTINCT id_diplomats) AS TotalWomen
+FROM diplomats
+INNER JOIN sending_country ON diplomats.ccode_send = sending_country.ccode_send
+INNER JOIN receiving_country ON diplomats.ccode_receive = receiving_country.ccode_receive
+WHERE gender = 1 AND
+  ccodealp_receive = 'ITA' AND
+  GME_send = 1  AND
+  title = 3
+GROUP BY sending_country.cname_send
+ORDER BY TotalWomen DESC
+LIMIT 1;
+
