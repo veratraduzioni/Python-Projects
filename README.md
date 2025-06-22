@@ -1,1 +1,1 @@
-# Projects done during the Data Analysis course with start2impact
+Projects with the programming language Python done during the my Data Analysis course.
