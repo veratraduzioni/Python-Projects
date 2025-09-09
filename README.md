@@ -1,10 +1,11 @@
-# Marketing EDA
+# Marketing Exploratory Data Analysis
 Dataset with the weekly distribution of the impressions gained through multiple marketing channels of an example company.<br>
-Sales column represents the sales generated with that specific distribution of impression.
+Sales column represents the sales generated with that specific distribution of impression.<br><br>
 <b>Objectives:</b>
 - Find the channels where the impressions generate more sales, in order to optimize investments
 - Propose a marketing strategy according to the data exploration done
-<br><br><b>Project steps:</b>
+<br><br>
+<b>Project steps:</b>
 - Missing values check
 - Impressions per year
 - Impressions per year and month → column conversion in the format date-period
